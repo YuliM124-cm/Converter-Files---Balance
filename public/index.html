@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Akuntan Converter — Konversi & Rapikan Rekening Koran dengan Aman</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===================== LAYAR LOGIN (Supabase Auth) ===================== -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="brand brand--center">
+        <span class="brand__icon">🔒</span>
+        <span class="brand__name">Akuntan Converter</span>
+      </div>
+      <p class="muted" style="text-align:center;">Masuk dengan akun tim untuk melanjutkan</p>
+
+      <form id="login-form">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required autocomplete="email" placeholder="nama@perusahaananda.com" />
+
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" required autocomplete="current-password" placeholder="••••••••" />
+
+        <button type="submit" class="btn btn--primary" id="login-submit-btn" style="width:100%;">Masuk</button>
+      </form>
+      <p class="status" id="login-status" aria-live="polite"></p>
+      <p class="muted small" style="text-align:center;">
+        Belum punya akun? Hubungi admin internal Anda untuk dibuatkan akses.
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================== APLIKASI (tampil setelah login) ===================== -->
+  <div id="app-root" hidden>
+    <header class="topbar">
+      <div class="container topbar__inner">
+        <div class="brand">
+          <span class="brand__icon">🔒</span>
+          <span class="brand__name">Akuntan Converter</span>
+        </div>
+        <p class="brand__tagline">Konversi file & rapikan rekening koran — aman, cepat, tanpa kehilangan data</p>
+        <div class="topbar__user">
+          <span id="user-email" class="muted small"></span>
+          <button class="btn btn--ghost" id="logout-btn">Keluar</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+
+      <section class="hero">
+        <h1>Satu tempat untuk konversi file dan rapikan rekening koran perusahaan</h1>
+        <p>
+          Dirancang khusus untuk akuntan: unggah PDF, Excel, CSV, atau hasil scan rekening koran —
+          dapatkan tabel transaksi rapi (Tanggal, Deskripsi, Debit, Kredit, Saldo) dalam format Excel,
+          lengkap tanpa ada deskripsi transaksi yang terpotong atau hilang.
+        </p>
+        <ul class="hero__badges">
+          <li>🔐 Akses dilindungi login akun tim (Supabase Auth)</li>
+          <li>⚡ Konversi &amp; rapikan sekaligus dalam satu langkah</li>
+          <li>📄 Mendukung PDF, Excel/CSV, dan gambar hasil scan (OCR)</li>
+        </ul>
+      </section>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab tab--active" data-tab="tidy" role="tab" aria-selected="true">
+          Rapikan Rekening Koran → Excel
+        </button>
+        <button class="tab" data-tab="convert" role="tab" aria-selected="false">
+          Konversi File Umum
+        </button>
+      </nav>
+
+      <!-- ===================== TAB: RAPIKAN REKENING KORAN ===================== -->
+      <section class="panel" id="panel-tidy" data-panel="tidy">
+        <h2>Rapikan rekening koran menjadi Excel siap pakai</h2>
+        <p class="muted">
+          Unggah satu file rekening koran (PDF, Excel/CSV, atau gambar hasil scan). Sistem akan
+          mengekstrak setiap transaksi — termasuk deskripsi/berita transfer yang panjang — lalu
+          menyusunnya ke kolom <strong>Tanggal, Deskripsi, Debit, Kredit, Saldo</strong> plus ringkasan total.
+        </p>
+
+        <div class="dropzone" id="tidy-dropzone">
+          <input type="file" id="tidy-file" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp" hidden />
+          <div class="dropzone__icon">📥</div>
+          <p><strong>Klik untuk pilih file</strong> atau seret & letakkan di sini</p>
+          <p class="muted small">PDF · XLSX · XLS · CSV · PNG · JPG · WEBP — maks. 25 MB</p>
+          <p class="file-name" id="tidy-filename"></p>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn--primary" id="tidy-preview-btn" disabled>Pratinjau transaksi</button>
+          <button class="btn btn--accent" id="tidy-download-btn" disabled>Rapikan &amp; Unduh Excel</button>
+        </div>
+
+        <div class="status" id="tidy-status" aria-live="polite"></div>
+
+        <div class="preview" id="tidy-preview" hidden>
+          <h3>Pratinjau (maks. 25 transaksi pertama)</h3>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Tanggal</th><th>Deskripsi</th><th>Debit</th><th>Kredit</th><th>Saldo</th></tr>
+              </thead>
+              <tbody id="tidy-preview-body"></tbody>
+            </table>
+          </div>
+          <p class="muted small" id="tidy-preview-summary"></p>
+        </div>
+      </section>
+
+      <!-- ===================== TAB: KONVERSI UMUM ===================== -->
+      <section class="panel panel--hidden" id="panel-convert" data-panel="convert">
+        <h2>Konversi file ke format lain</h2>
+        <p class="muted">
+          Cocok untuk dokumen non-rekening koran: ubah PDF/Excel/CSV/gambar menjadi Excel, CSV, atau teks polos.
+        </p>
+
+        <div class="dropzone" id="convert-dropzone">
+          <input type="file" id="convert-file" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp,.txt" hidden />
+          <div class="dropzone__icon">📁</div>
+          <p><strong>Klik untuk pilih file</strong> atau seret & letakkan di sini</p>
+          <p class="muted small">PDF · XLSX · XLS · CSV · PNG · JPG · WEBP · TXT — maks. 25 MB</p>
+          <p class="file-name" id="convert-filename"></p>
+        </div>
+
+        <div class="target-select">
+          <label for="convert-target">Konversi ke:</label>
+          <select id="convert-target">
+            <option value="xlsx">Excel (.xlsx)</option>
+            <option value="csv">CSV (.csv)</option>
+            <option value="txt">Teks (.txt)</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn--primary" id="convert-btn" disabled>Konversi &amp; Unduh</button>
+        </div>
+
+        <div class="status" id="convert-status" aria-live="polite"></div>
+      </section>
+
+      <section class="security-note">
+        <h2>Bagaimana keamanan data perusahaan dijaga?</h2>
+        <div class="security-grid">
+          <div class="security-card">
+            <h3>👤 Login akun tim (Supabase Auth)</h3>
+            <p>Setiap anggota tim login dengan akunnya sendiri — tidak ada akses tanpa autentikasi yang sah.</p>
+          </div>
+          <div class="security-card">
+            <h3>🧠 Diproses di memori</h3>
+            <p>File dibaca ke memori, diproses, lalu berkas sementara dihapus segera — tidak dibiarkan tersimpan.</p>
+          </div>
+          <div class="security-card">
+            <h3>🚫 Tanpa penyimpanan data transaksi</h3>
+            <p>Hasil konversi dikirim langsung ke Anda; tidak ada salinan data transaksi yang disimpan di server.</p>
+          </div>
+          <div class="security-card">
+            <h3>🔒 HTTPS otomatis</h3>
+            <p>Vercel menyediakan enkripsi TLS otomatis untuk seluruh trafik dari browser ke server.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>Akuntan Converter — alat bantu internal untuk mempercepat pekerjaan rekonsiliasi & pembukuan.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Supabase JS client (dimuat dari CDN resmi) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    // Isi dengan kredensial proyek Supabase Anda (keduanya AMAN untuk publik —
+    // anon key hanya bisa melakukan apa yang diizinkan oleh kebijakan RLS Anda).
+    window.SUPABASE_URL = "https://fsxwvjfusywuicxugjnv.supabase.co";
+    window.SUPABASE_ANON_KEY = "sb_publishable_ZBM0KAyrOts5NRYuwkXtEA_xl21SkQY";
+  </script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
